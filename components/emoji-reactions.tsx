@@ -1,0 +1,116 @@
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ValidEmoji } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
+
+interface EmojiReactionsProps {
+  jokeId: string;
+}
+
+export function EmojiReactions({ jokeId }: EmojiReactionsProps) {
+  const [loading, setLoading] = useState<ValidEmoji | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [lastClicked, setLastClicked] = useState<ValidEmoji | null>(null);
+
+  const emojis: ValidEmoji[] = ["😂", "🙃", "😐", "😤", "😮"];
+
+  const handleReaction = async (emoji: ValidEmoji) => {
+    try {
+      setLoading(emoji);
+      setError(null);
+      
+      console.log(`Processing reaction for joke ${jokeId} with emoji ${emoji}`);
+      
+      const supabase = createClient();
+      
+      // Check if a reaction with this emoji already exists for the joke
+      const { data: existingReaction, error: fetchError } = await supabase
+        .from('reactions')
+        .select('*')
+        .eq('joke_id', jokeId)
+        .eq('emoji', emoji)
+        .single();
+      
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+        console.error("Error fetching existing reaction:", fetchError);
+        throw new Error(`Failed to check existing reaction: ${fetchError.message}`);
+      }
+      
+      if (existingReaction) {
+        console.log(`Updating existing reaction with ID ${existingReaction.id}`);
+        // Update existing reaction count
+        const { error: updateError } = await supabase
+          .from('reactions')
+          .update({
+            reaction_count: existingReaction.reaction_count + 1
+          })
+          .eq('id', existingReaction.id);
+          
+        if (updateError) {
+          console.error("Error updating reaction:", updateError);
+          throw new Error(`Failed to update reaction: ${updateError.message}`);
+        }
+      } else {
+        console.log(`Creating new reaction for joke ${jokeId} with emoji ${emoji}`);
+        // Create new reaction with count 1
+        const { error: insertError } = await supabase
+          .from('reactions')
+          .insert({
+            joke_id: jokeId,
+            emoji,
+            reaction_count: 1
+          });
+          
+        if (insertError) {
+          console.error("Error inserting reaction:", insertError);
+          throw new Error(`Failed to create reaction: ${insertError.message}`);
+        }
+      }
+
+      console.log(`Successfully processed reaction for joke ${jokeId} with emoji ${emoji}`);
+      setLastClicked(emoji);
+      
+      // Reset last clicked after animation duration
+      setTimeout(() => {
+        setLastClicked(null);
+      }, 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send reaction");
+      console.error("Error sending reaction:", err);
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap justify-center gap-2 md:gap-4">
+      {error && (
+        <div className="w-full text-center text-sm text-destructive mb-2">
+          {error}
+        </div>
+      )}
+      
+      {emojis.map((emoji) => (
+        <Button
+          key={emoji}
+          variant="outline"
+          size="lg"
+          className={`text-2xl md:text-3xl h-12 md:h-16 w-12 md:w-16 transition-all ${
+            lastClicked === emoji ? "scale-125 bg-accent" : ""
+          }`}
+          disabled={loading !== null}
+          onClick={() => handleReaction(emoji)}
+        >
+          {emoji}
+          {loading === emoji && (
+            <span className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
+              <div className="h-4 w-4 rounded-full border-2 border-t-transparent animate-spin"></div>
+            </span>
+          )}
+        </Button>
+      ))}
+    </div>
+  );
+}

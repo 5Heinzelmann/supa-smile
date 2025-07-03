@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -9,8 +11,15 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "SupaSmile - Joke Reaction App",
+  description: "A real-time joke reaction application with emoji responses",
+  keywords: ["jokes", "emoji", "reactions", "real-time", "supabase", "nextjs"],
+  authors: [{ name: "SupaSmile Team" }],
+  openGraph: {
+    title: "SupaSmile - Joke Reaction App",
+    description: "A real-time joke reaction application with emoji responses",
+    type: "website",
+  },
 };
 
 const geistSans = Geist({
@@ -26,14 +35,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
+      <body className={`${geistSans.className} antialiased flex flex-col min-h-screen`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <Header />
+          <main className="flex-grow container mx-auto px-4 py-8">
+            {children}
+          </main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
