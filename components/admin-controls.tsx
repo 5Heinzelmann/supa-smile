@@ -27,7 +27,7 @@ export function AdminControls({ onJokeChange }: AdminControlsProps) {
       const { data: currentActiveJoke, error: fetchError } = await supabase
         .from('jokes')
         .select('id')
-        .eq('active', true)
+        .eq('is_current', true)
         .single();
       
       if (fetchError) {
@@ -49,7 +49,7 @@ export function AdminControls({ onJokeChange }: AdminControlsProps) {
       // Update the active status
       const { error: updateError } = await supabase
         .from('jokes')
-        .update({ active: false })
+        .update({ is_current: false })
         .eq('id', currentActiveJoke.id);
       
       if (updateError) {
@@ -58,7 +58,7 @@ export function AdminControls({ onJokeChange }: AdminControlsProps) {
       
       const { error: activateError } = await supabase
         .from('jokes')
-        .update({ active: true })
+        .update({ is_current: true })
         .eq('id', nextJoke.id);
       
       if (activateError) {
