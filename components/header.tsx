@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { ThemeSwitcher } from "./theme-switcher";
-import { ClientAuthButton } from "./client-auth-button";
+import {ClientAuthButton} from "./client-auth-button";
 
 export function Header() {
   return (
@@ -10,7 +9,6 @@ export function Header() {
           SupaSmile
         </Link>
         <div className="flex items-center gap-4">
-          <ThemeSwitcher />
           <ClientAuthButton />
         </div>
       </div>
