@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Reaction, ValidEmoji } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
@@ -22,16 +22,46 @@ export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCount
   const [error, setError] = useState<string | null>(null);
   const [recentlyUpdated, setRecentlyUpdated] = useState<ValidEmoji | null>(null);
 
+  // Add a ref to track if initialReactions has changed
+  const prevInitialReactionsRef = useRef<Reaction[]>([]);
+  
+  // Compare two arrays of reactions to see if they're different
+  const haveReactionsChanged = (prev: Reaction[], current: Reaction[]) => {
+    if (prev.length !== current.length) return true;
+    
+    // Create maps of emoji -> count for easier comparison
+    const prevMap = new Map(prev.map(r => [r.emoji, r.reaction_count]));
+    const currentMap = new Map(current.map(r => [r.emoji, r.reaction_count]));
+    
+    // Check if any emoji has a different count
+    for (const [emoji, count] of currentMap.entries()) {
+      if (prevMap.get(emoji) !== count) return true;
+    }
+    
+    return false;
+  };
+  
   useEffect(() => {
+    console.log('ReactionCounter useEffect triggered', { jokeId, initialReactions });
+    
+    const reactionsChanged = haveReactionsChanged(prevInitialReactionsRef.current, initialReactions);
+    console.log('Have reactions changed?', reactionsChanged);
+    
+    // Update the ref with current initialReactions
+    prevInitialReactionsRef.current = [...initialReactions];
+    
     // Initialize with any provided initial reactions
     if (initialReactions.length > 0) {
+      console.log('Initializing with provided reactions:', initialReactions);
       const initialCounts = { ...reactions };
       initialReactions.forEach((reaction) => {
         initialCounts[reaction.emoji as ValidEmoji] = reaction.reaction_count;
       });
+      console.log('Setting initial counts:', initialCounts);
       setReactions(initialCounts);
       setLoading(false);
     } else {
+      console.log('No initial reactions provided, fetching reactions');
       // Fetch reactions if not provided
       fetchReactions();
     }
@@ -50,6 +80,7 @@ export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCount
           filter: `joke_id=eq.${jokeId}`,
         },
         (payload) => {
+          console.log('Reaction update received:', payload.new);
           const updatedReaction = payload.new as Reaction;
           setReactions((prev) => ({
             ...prev,

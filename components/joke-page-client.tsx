@@ -30,15 +30,33 @@ export function JokePageClient({ initialJoke }: JokePageClientProps) {
           filter: 'is_current=eq.true',
         },
         async (payload) => {
+          console.log('Joke update received:', payload.new);
+          
           // When joke changes, fetch the full joke with reactions
-          const { data } = await supabase
-            .from('jokes')
-            .select('*, reactions(*)')
-            .eq('id', payload.new.id)
-            .single();
-            
-          if (data) {
-            setJoke(data as JokeWithReactions);
+          // Ensure payload.new has an id property
+          if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
+            try {
+              const { data } = await supabase
+                .from('jokes')
+                .select('*, reactions(*)')
+                .eq('id', payload.new.id)
+                .single();
+                
+              if (data) {
+                console.log('Fetched updated joke with reactions:', data);
+                
+                // Create a new joke object with a new reactions array to ensure React detects the change
+                const updatedJoke = {
+                  ...data,
+                  reactions: [...data.reactions] // Create a new array reference
+                };
+                
+                console.log('Setting joke with new reactions array:', updatedJoke);
+                setJoke(updatedJoke as JokeWithReactions);
+              }
+            } catch (error) {
+              console.error('Error fetching updated joke:', error);
+            }
           }
         }
       )
@@ -69,7 +87,11 @@ export function JokePageClient({ initialJoke }: JokePageClientProps) {
         </div>
         
         <div className="w-full">
-          <ReactionCounter jokeId={joke.id} initialReactions={joke.reactions} />
+          <ReactionCounter
+            key={`reactions-${joke.id}-${joke.reactions.length}`}
+            jokeId={joke.id}
+            initialReactions={joke.reactions}
+          />
         </div>
       </div>
     </>
