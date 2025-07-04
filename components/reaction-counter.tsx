@@ -167,7 +167,7 @@ export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCount
                 <span className="text-xl w-8">{emoji}</span>
                 <div className="flex-1 h-6 bg-muted/30 rounded-full overflow-hidden">
                   <motion.div
-                    className={`h-full gradient-primary transition-all duration-500 ${
+                    className={`h-full bg-white/90 transition-all duration-500 ${
                       recentlyUpdated === emoji ? "animate-pulse-custom" : ""
                     }`}
                     initial={{ width: 0 }}
