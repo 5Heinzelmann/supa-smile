@@ -29,6 +29,7 @@
     - **Fields**:
         - `id`: Eindeutige Witz-ID (int).
         - `text`: Witztext (varchar).
+        - `is_current`: (bool) Kennzeichnung, ob der Witz gerade aktiv ist.
         - `created_at`: Zeitstempel der Erstellung (timestamp).
 
 2. **Reactions Table**
