@@ -1,16 +1,9 @@
-import { ShieldAlert } from "lucide-react";
-import { AdminPageClient } from "@/components/admin-page-client";
+import {AdminPageClient} from "@/components/admin-page-client";
 
 export default function ProtectedPage() {
   return (
     <div className="flex-1 w-full flex flex-col gap-8 max-w-3xl mx-auto">
-      <div className="w-full">
-        <div className="bg-accent text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
-          <ShieldAlert size="16" strokeWidth={2} />
-          Admin Dashboard - Manage jokes and view statistics
-        </div>
-      </div>
-      
+
       <div className="flex flex-col gap-6">
         <h1 className="font-bold text-2xl">Joke Management</h1>
         
