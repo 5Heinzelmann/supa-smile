@@ -153,7 +153,7 @@ export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCount
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <Card variant="glossySecondary" className="w-full">
+      <Card variant="glossyPrimary" className="w-full">
         <CardContent className="pt-6">
           <div className="space-y-3">
             {emojis.map((emoji, index) => (
@@ -200,7 +200,7 @@ export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCount
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8, duration: 0.5 }}
             >
-              <Badge variant="glossyAccent" animation="float">
+              <Badge variant="glossy" animation="float">
                 Total: {totalReactions}
               </Badge>
             </motion.div>
