@@ -13,14 +13,12 @@ interface AdminControlsProps {
 export function AdminControls({ onJokeChange }: AdminControlsProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const handleNextJoke = async () => {
     try {
       setLoading(true);
       setError(null);
-      setSuccess(null);
-      
+
       const supabase = createClient();
       
       // Get the current active joke
@@ -65,17 +63,11 @@ export function AdminControls({ onJokeChange }: AdminControlsProps) {
         throw new Error(`Failed to activate next joke: ${activateError.message}`);
       }
 
-      setSuccess("Successfully loaded the next joke!");
-      
       // Notify parent component if callback provided
       if (onJokeChange) {
         onJokeChange();
       }
       
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setSuccess(null);
-      }, 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load next joke");
       console.error("Error loading next joke:", err);
@@ -93,13 +85,7 @@ export function AdminControls({ onJokeChange }: AdminControlsProps) {
           </div>
         )}
         
-        {success && (
-          <div className="mb-4 p-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-md text-sm">
-            {success}
-          </div>
-        )}
-        
-        <Button 
+        <Button
           onClick={handleNextJoke}
           disabled={loading}
           className="w-full flex items-center justify-center gap-2"
