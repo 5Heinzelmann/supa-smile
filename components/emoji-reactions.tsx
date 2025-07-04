@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ValidEmoji } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
+import { EMOJI_LIST } from "@/lib/constants";
 
 interface EmojiReactionsProps {
   jokeId: string;
@@ -15,7 +16,8 @@ export function EmojiReactions({ jokeId }: EmojiReactionsProps) {
   const [lastClicked, setLastClicked] = useState<ValidEmoji | null>(null);
   const [hasVoted, setHasVoted] = useState<boolean>(false);
 
-  const emojis: ValidEmoji[] = ["😂", "🙃", "😐", "😤", "😮"];
+  // Use centralized emoji list
+  const emojis: ValidEmoji[] = EMOJI_LIST;
 
   useEffect(() => {
     const votedJokes = JSON.parse(localStorage.getItem('votedJokes') || '{}');

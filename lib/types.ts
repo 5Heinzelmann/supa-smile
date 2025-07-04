@@ -1,6 +1,7 @@
 /**
  * Type definitions for the SupaSmile application
  */
+import { EMOJI_REACTIONS } from './constants';
 
 /**
  * Interface for Joke entity matching the database schema
@@ -15,7 +16,7 @@ export interface Joke {
 /**
  * Valid emoji reactions for jokes
  */
-export type ValidEmoji = '😂' | '🙃' | '😐' | '😤' | '😮';
+export type ValidEmoji = typeof EMOJI_REACTIONS[keyof typeof EMOJI_REACTIONS];
 
 /**
  * Interface for Reaction entity matching the database schema

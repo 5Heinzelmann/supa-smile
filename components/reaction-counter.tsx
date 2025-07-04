@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Reaction, ValidEmoji } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
+import { EMOJI_REACTIONS, EMOJI_LIST } from "@/lib/constants";
 
 interface ReactionCounterProps {
   jokeId: string;
@@ -11,12 +12,13 @@ interface ReactionCounterProps {
 }
 
 export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCounterProps) {
+  // Initialize reactions state using centralized emoji constants
   const [reactions, setReactions] = useState<Record<ValidEmoji, number>>({
-    "😂": 0,
-    "🙃": 0,
-    "😐": 0,
-    "😤": 0,
-    "😮": 0,
+    [EMOJI_REACTIONS.LAUGHING]: 0,
+    [EMOJI_REACTIONS.SMIRKING]: 0,
+    [EMOJI_REACTIONS.NEUTRAL]: 0,
+    [EMOJI_REACTIONS.ANNOYED]: 0,
+    [EMOJI_REACTIONS.SURPRISED]: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -139,7 +141,8 @@ export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCount
     return (count / totalReactions) * 100;
   };
 
-  const emojis: ValidEmoji[] = ["😂", "🙃", "😐", "😤", "😮"];
+  // Use centralized emoji list
+  const emojis: ValidEmoji[] = EMOJI_LIST;
 
   if (loading) {
     return (
