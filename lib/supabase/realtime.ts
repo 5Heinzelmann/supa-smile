@@ -1,205 +1,14 @@
-import { createClient } from './client';
-import { Joke, Reaction, JokeWithReactions } from '../types';
-
-// Channel names
-const JOKE_UPDATES_CHANNEL = 'joke_updates';
-const REACTION_UPDATES_CHANNEL = 'reaction_updates';
-
-// Maximum number of reconnection attempts
-const MAX_RECONNECT_ATTEMPTS = 5;
-// Delay between reconnection attempts (in ms)
-const RECONNECT_DELAY = 2000;
-
-// Types for channel callbacks
-export type JokeUpdateCallback = (joke: Joke) => void;
-export type ReactionUpdateCallback = (reaction: Reaction) => void;
+import { RealtimeChannel } from "@supabase/supabase-js";
+import { createClient } from "./client";
+import { JokeWithReactions, Reaction, ValidEmoji } from "../types";
 
 /**
- * Subscribe to joke updates channel
- */
-export function subscribeToJokeUpdates(
-  onJokeUpdate: JokeUpdateCallback,
-  onError?: (error: Error) => void
-) {
-  const supabase = createClient();
-  let reconnectAttempts = 0;
-  
-  const channel = supabase
-    .channel(JOKE_UPDATES_CHANNEL)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'jokes',
-      },
-      (payload) => {
-        try {
-          const joke = payload.new as Joke;
-          onJokeUpdate(joke);
-        } catch (error) {
-          if (onError && error instanceof Error) {
-            onError(error);
-          }
-        }
-      }
-    )
-    .subscribe((status) => {
-      if (status === 'CHANNEL_ERROR') {
-        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-          reconnectAttempts++;
-          setTimeout(() => {
-            channel.subscribe();
-          }, RECONNECT_DELAY);
-        } else if (onError) {
-          onError(new Error(`Failed to connect to ${JOKE_UPDATES_CHANNEL} after ${MAX_RECONNECT_ATTEMPTS} attempts`));
-        }
-      } else if (status === 'SUBSCRIBED') {
-        reconnectAttempts = 0;
-      }
-    });
-
-  return {
-    unsubscribe: () => {
-      supabase.removeChannel(channel);
-    }
-  };
-}
-
-/**
- * Subscribe to reaction updates channel
- */
-export function subscribeToReactionUpdates(
-  onReactionUpdate: ReactionUpdateCallback,
-  onError?: (error: Error) => void
-) {
-  const supabase = createClient();
-  let reconnectAttempts = 0;
-  
-  const channel = supabase
-    .channel(REACTION_UPDATES_CHANNEL)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'reactions',
-      },
-      (payload) => {
-        try {
-          const reaction = payload.new as Reaction;
-          onReactionUpdate(reaction);
-        } catch (error) {
-          if (onError && error instanceof Error) {
-            onError(error);
-          }
-        }
-      }
-    )
-    .subscribe((status) => {
-      if (status === 'CHANNEL_ERROR') {
-        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-          reconnectAttempts++;
-          setTimeout(() => {
-            channel.subscribe();
-          }, RECONNECT_DELAY);
-        } else if (onError) {
-          onError(new Error(`Failed to connect to ${REACTION_UPDATES_CHANNEL} after ${MAX_RECONNECT_ATTEMPTS} attempts`));
-        }
-      } else if (status === 'SUBSCRIBED') {
-        reconnectAttempts = 0;
-      }
-    });
-
-  return {
-    unsubscribe: () => {
-      supabase.removeChannel(channel);
-    }
-  };
-}
-
-/**
- * Subscribe to both joke and reaction updates for a specific joke
- */
-export function subscribeToJokeWithReactions(
-  jokeId: string,
-  onUpdate: (data: { joke?: Joke; reaction?: Reaction }) => void,
-  onError?: (error: Error) => void
-) {
-  const supabase = createClient();
-  let reconnectAttempts = 0;
-  
-  const channel = supabase
-    .channel(`joke_with_reactions:${jokeId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'jokes',
-        filter: `id=eq.${jokeId}`,
-      },
-      (payload) => {
-        try {
-          const joke = payload.new as Joke;
-          onUpdate({ joke });
-        } catch (error) {
-          if (onError && error instanceof Error) {
-            onError(error);
-          }
-        }
-      }
-    )
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'reactions',
-        filter: `joke_id=eq.${jokeId}`,
-      },
-      (payload) => {
-        try {
-          const reaction = payload.new as Reaction;
-          onUpdate({ reaction });
-        } catch (error) {
-          if (onError && error instanceof Error) {
-            onError(error);
-          }
-        }
-      }
-    )
-    .subscribe((status) => {
-      if (status === 'CHANNEL_ERROR') {
-        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-          reconnectAttempts++;
-          setTimeout(() => {
-            channel.subscribe();
-          }, RECONNECT_DELAY);
-        } else if (onError) {
-          onError(new Error(`Failed to connect to joke_with_reactions:${jokeId} after ${MAX_RECONNECT_ATTEMPTS} attempts`));
-        }
-      } else if (status === 'SUBSCRIBED') {
-        reconnectAttempts = 0;
-      }
-    });
-
-  return {
-    unsubscribe: () => {
-      supabase.removeChannel(channel);
-    }
-  };
-}
-
-/**
- * Subscribe to current joke updates
+ * Subscribes to updates for the current joke
  */
 export function subscribeToCurrentJoke(
-  onCurrentJokeUpdate: JokeUpdateCallback,
-  onError?: (error: Error) => void
-) {
+  onJokeUpdate: (joke: JokeWithReactions) => void
+): { channel: RealtimeChannel; unsubscribe: () => void } {
   const supabase = createClient();
-  let reconnectAttempts = 0;
   
   const channel = supabase
     .channel('current_joke_updates')
@@ -211,35 +20,101 @@ export function subscribeToCurrentJoke(
         table: 'jokes',
         filter: 'is_current=eq.true',
       },
-      (payload) => {
-        try {
-          const joke = payload.new as Joke;
-          onCurrentJokeUpdate(joke);
-        } catch (error) {
-          if (onError && error instanceof Error) {
-            onError(error);
+      async (payload) => {
+        // Ensure payload.new has an id property
+        if (payload.new && typeof payload.new === 'object' && 'id' in payload.new) {
+          try {
+            const { data } = await supabase
+              .from('jokes')
+              .select('*, reactions(*)')
+              .eq('id', payload.new.id)
+              .single();
+              
+            if (data) {
+              // Create a new joke object with a new reactions array to ensure React detects the change
+              const updatedJoke = {
+                ...data,
+                reactions: [...data.reactions] // Create a new array reference
+              };
+              
+              onJokeUpdate(updatedJoke as JokeWithReactions);
+            }
+          } catch (error) {
+            console.error('Error fetching updated joke:', error);
           }
         }
       }
     )
-    .subscribe((status) => {
-      if (status === 'CHANNEL_ERROR') {
-        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-          reconnectAttempts++;
-          setTimeout(() => {
-            channel.subscribe();
-          }, RECONNECT_DELAY);
-        } else if (onError) {
-          onError(new Error(`Failed to connect to current_joke_updates after ${MAX_RECONNECT_ATTEMPTS} attempts`));
-        }
-      } else if (status === 'SUBSCRIBED') {
-        reconnectAttempts = 0;
-      }
-    });
+    .subscribe();
 
   return {
-    unsubscribe: () => {
-      supabase.removeChannel(channel);
-    }
+    channel,
+    unsubscribe: () => supabase.removeChannel(channel)
   };
+}
+
+/**
+ * Subscribes to reaction updates for a specific joke
+ */
+export function subscribeToJokeReactions(
+  jokeId: string,
+  onReactionUpdate: (reaction: Reaction) => void
+): { channel: RealtimeChannel; unsubscribe: () => void } {
+  const supabase = createClient();
+  
+  const channel = supabase
+    .channel(`reactions:${jokeId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'reactions',
+        filter: `joke_id=eq.${jokeId}`,
+      },
+      (payload) => {
+        const updatedReaction = payload.new as Reaction;
+        onReactionUpdate(updatedReaction);
+      }
+    )
+    .subscribe();
+
+  return {
+    channel,
+    unsubscribe: () => supabase.removeChannel(channel)
+  };
+}
+
+/**
+ * Fetches all reactions for a specific joke
+ */
+export async function fetchJokeReactions(
+  jokeId: string
+): Promise<Record<ValidEmoji, number> | null> {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('reactions')
+      .select('*')
+      .eq('joke_id', jokeId);
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Initialize with zero counts
+    const counts: Record<ValidEmoji, number> = {} as Record<ValidEmoji, number>;
+    
+    // Update with actual counts from data
+    if (data) {
+      data.forEach((reaction) => {
+        counts[reaction.emoji as ValidEmoji] = reaction.reaction_count;
+      });
+    }
+    
+    return counts;
+  } catch (error) {
+    console.error("Error fetching reactions:", error);
+    return null;
+  }
 }

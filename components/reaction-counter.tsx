@@ -3,8 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Reaction, ValidEmoji } from "@/lib/types";
-import { createClient } from "@/lib/supabase/client";
 import { EMOJI_REACTIONS, EMOJI_LIST } from "@/lib/constants";
+import { subscribeToJokeReactions, fetchJokeReactions } from "@/lib/supabase/realtime";
 
 interface ReactionCounterProps {
   jokeId: string;
@@ -68,36 +68,21 @@ export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCount
       fetchReactions();
     }
 
-    // Set up Supabase realtime subscription
-    const supabase = createClient();
-    
-    const channel = supabase
-      .channel(`reactions:${jokeId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'reactions',
-          filter: `joke_id=eq.${jokeId}`,
-        },
-        (payload) => {
-          console.log('Reaction update received:', payload.new);
-          const updatedReaction = payload.new as Reaction;
-          setReactions((prev) => ({
-            ...prev,
-            [updatedReaction.emoji as ValidEmoji]: updatedReaction.reaction_count,
-          }));
-          
-          // Highlight the updated reaction
-          setRecentlyUpdated(updatedReaction.emoji as ValidEmoji);
-          setTimeout(() => setRecentlyUpdated(null), 1000);
-        }
-      )
-      .subscribe();
+    // Set up Supabase realtime subscription for reactions
+    const { unsubscribe } = subscribeToJokeReactions(jokeId, (updatedReaction) => {
+      console.log('Reaction update received:', updatedReaction);
+      setReactions((prev) => ({
+        ...prev,
+        [updatedReaction.emoji as ValidEmoji]: updatedReaction.reaction_count,
+      }));
+      
+      // Highlight the updated reaction
+      setRecentlyUpdated(updatedReaction.emoji as ValidEmoji);
+      setTimeout(() => setRecentlyUpdated(null), 1000);
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      unsubscribe();
     };
   }, [jokeId, initialReactions]);
 
@@ -105,25 +90,14 @@ export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCount
     try {
       setLoading(true);
       
-      const supabase = createClient();
-      const { data: reactionData, error: fetchError } = await supabase
-        .from('reactions')
-        .select('*')
-        .eq('joke_id', jokeId);
+      const counts = await fetchJokeReactions(jokeId);
       
-      if (fetchError) {
-        throw fetchError;
+      if (counts) {
+        setReactions(counts);
+        setError(null);
+      } else {
+        throw new Error("Failed to load reactions");
       }
-      
-      const counts = { ...reactions };
-      if (reactionData) {
-        reactionData.forEach((reaction) => {
-          counts[reaction.emoji as ValidEmoji] = reaction.reaction_count;
-        });
-      }
-      
-      setReactions(counts);
-      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load reactions");
       console.error("Error fetching reactions:", err);
