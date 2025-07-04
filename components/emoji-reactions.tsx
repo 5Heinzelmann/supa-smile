@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ValidEmoji } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
 import { EMOJI_LIST } from "@/lib/constants";
+import { motion } from "framer-motion";
 
 interface EmojiReactionsProps {
   jokeId: string;
@@ -106,40 +107,66 @@ export function EmojiReactions({ jokeId }: EmojiReactionsProps) {
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <motion.div
+      className="flex flex-col items-center gap-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.2, duration: 0.5 }}
+    >
       {error && (
-        <div className="w-full text-center text-sm text-destructive mb-2">
+        <motion.div
+          className="w-full text-center text-sm text-destructive mb-2"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           {error}
-        </div>
+        </motion.div>
       )}
       
       {hasVoted && (
-        <div className="w-full text-center text-sm text-primary mb-2">
+        <motion.div
+          className="w-full text-center text-sm text-primary mb-2"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           You've already voted for this joke
-        </div>
+        </motion.div>
       )}
       
       <div className="flex flex-wrap justify-center gap-2 md:gap-4">
-        {emojis.map((emoji) => (
-          <Button
+        {emojis.map((emoji, index) => (
+          <motion.div
             key={emoji}
-            variant="outline"
-            size="lg"
-            className={`text-2xl md:text-3xl h-12 md:h-16 w-12 md:w-16 transition-all ${
-              lastClicked === emoji ? "scale-125 bg-accent" : ""
-            } ${hasVoted ? "opacity-50" : ""}`}
-            disabled={loading !== null || hasVoted}
-            onClick={() => handleReaction(emoji)}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 * index, duration: 0.3 }}
           >
-            {emoji}
-            {loading === emoji && (
-              <span className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
-                <div className="h-4 w-4 rounded-full border-2 border-t-transparent animate-spin"></div>
-              </span>
-            )}
-          </Button>
+            <Button
+              variant="glossy"
+              size="lg"
+              animation="wiggle"
+              className={`text-2xl md:text-3xl h-12 md:h-16 w-12 md:w-16 ${
+                lastClicked === emoji ? "scale-125 bg-accent" : ""
+              } ${hasVoted ? "opacity-50" : ""}`}
+              disabled={loading !== null || hasVoted}
+              onClick={() => handleReaction(emoji)}
+            >
+              {emoji}
+              {loading === emoji && (
+                <span className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
+                  <motion.div
+                    className="h-4 w-4 rounded-full border-2 border-t-transparent"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                </span>
+              )}
+            </Button>
+          </motion.div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }

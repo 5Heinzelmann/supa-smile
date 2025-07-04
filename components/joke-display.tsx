@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Joke, JokeWithReactions } from "@/lib/types";
+import { motion } from "framer-motion";
 
 interface JokeDisplayProps {
   joke?: JokeWithReactions | Joke;
@@ -11,7 +12,7 @@ interface JokeDisplayProps {
 export function JokeDisplay({ joke, isLoading }: JokeDisplayProps) {
   if (isLoading) {
     return (
-      <Card className="w-full">
+      <Card variant="glossy" animation="pulse" className="w-full">
         <CardHeader>
           <CardTitle className="text-center">Loading joke...</CardTitle>
         </CardHeader>
@@ -26,33 +27,46 @@ export function JokeDisplay({ joke, isLoading }: JokeDisplayProps) {
 
   if (!joke) {
     return (
-      <Card className="w-full border-destructive">
+      <Card variant="glossy" className="w-full border-destructive">
         <CardHeader>
           <CardTitle className="text-center text-destructive">Error</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center text-destructive">No joke available</div>
-          <button
+          <motion.button
             onClick={() => window.location.reload()}
-            className="mt-4 w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition-colors"
+            className="mt-4 w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition-all"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
           >
             Retry
-          </button>
+          </motion.button>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-center">Joke of the Day</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-xl text-center p-6 min-h-24 flex items-center justify-center">
-          {joke.text || "No joke available"}
-        </div>
-      </CardContent>
-    </Card>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card variant="glossyPrimary" className="w-full">
+        <CardHeader>
+          <CardTitle className="text-center">Joke of the Day</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <motion.div
+            className="text-xl text-center p-6 min-h-24 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            {joke.text || "No joke available"}
+          </motion.div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }

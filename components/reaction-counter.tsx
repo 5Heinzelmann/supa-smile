@@ -2,9 +2,11 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Reaction, ValidEmoji } from "@/lib/types";
 import { EMOJI_REACTIONS, EMOJI_LIST } from "@/lib/constants";
 import { subscribeToJokeReactions, fetchJokeReactions } from "@/lib/supabase/realtime";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ReactionCounterProps {
   jokeId: string;
@@ -120,7 +122,7 @@ export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCount
 
   if (loading) {
     return (
-      <Card className="w-full">
+      <Card variant="glossy" animation="pulse" className="w-full">
         <CardContent className="pt-6">
           <div className="space-y-2">
             {emojis.map((emoji) => (
@@ -137,7 +139,7 @@ export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCount
 
   if (error) {
     return (
-      <Card className="w-full border-destructive">
+      <Card variant="glossy" className="w-full border-destructive">
         <CardContent className="pt-6">
           <div className="text-center text-destructive">{error}</div>
         </CardContent>
@@ -146,30 +148,65 @@ export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCount
   }
 
   return (
-    <Card className="w-full">
-      <CardContent className="pt-6">
-        <div className="space-y-3">
-          {emojis.map((emoji) => (
-            <div key={emoji} className="flex items-center gap-2">
-              <span className="text-xl w-8">{emoji}</span>
-              <div className="flex-1 h-6 bg-muted rounded-full overflow-hidden">
-                <div
-                  className={`h-full bg-primary transition-all duration-500 ${
-                    recentlyUpdated === emoji ? "animate-pulse" : ""
-                  }`}
-                  style={{ width: `${getPercentage(reactions[emoji])}%` }}
-                ></div>
-              </div>
-              <span className="text-sm font-medium w-8 text-right">
-                {reactions[emoji]}
-              </span>
-            </div>
-          ))}
-          <div className="text-sm text-muted-foreground text-right pt-2">
-            Total: {totalReactions}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+    >
+      <Card variant="glossySecondary" className="w-full">
+        <CardContent className="pt-6">
+          <div className="space-y-3">
+            {emojis.map((emoji, index) => (
+              <motion.div
+                key={emoji}
+                className="flex items-center gap-2"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * index, duration: 0.3 }}
+              >
+                <span className="text-xl w-8">{emoji}</span>
+                <div className="flex-1 h-6 bg-muted/30 rounded-full overflow-hidden">
+                  <motion.div
+                    className={`h-full gradient-primary transition-all duration-500 ${
+                      recentlyUpdated === emoji ? "animate-pulse-custom" : ""
+                    }`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${getPercentage(reactions[emoji])}%` }}
+                    transition={{ duration: 0.8, delay: 0.2 + (0.1 * index) }}
+                  />
+                </div>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={reactions[emoji]}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 1.5, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Badge
+                      variant={recentlyUpdated === emoji ? "glossy" : "default"}
+                      animation={recentlyUpdated === emoji ? "pulse" : "none"}
+                      className="w-8 justify-center"
+                    >
+                      {reactions[emoji]}
+                    </Badge>
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
+            ))}
+            <motion.div
+              className="text-sm font-medium text-right pt-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+            >
+              <Badge variant="glossyAccent" animation="float">
+                Total: {totalReactions}
+              </Badge>
+            </motion.div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
