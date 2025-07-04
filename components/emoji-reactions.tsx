@@ -28,7 +28,7 @@ export function EmojiReactions({ jokeId }: EmojiReactionsProps) {
   const handleReaction = async (emoji: ValidEmoji) => {
     try {
       if (hasVoted) {
-        setError("You've already voted for this joke");
+        setError("You've already voted for this joke - wait for the next one...");
         return;
       }
 
@@ -131,7 +131,7 @@ export function EmojiReactions({ jokeId }: EmojiReactionsProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          You've already voted for this joke
+          You've already voted for this joke - wait for the next one...
         </motion.div>
       )}
       
