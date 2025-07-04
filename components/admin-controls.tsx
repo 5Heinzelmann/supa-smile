@@ -86,9 +86,6 @@ export function AdminControls({ onJokeChange }: AdminControlsProps) {
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-center">Admin Controls</CardTitle>
-      </CardHeader>
       <CardContent>
         {error && (
           <div className="mb-4 p-2 bg-destructive/10 text-destructive rounded-md text-sm">

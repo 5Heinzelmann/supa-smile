@@ -53,9 +53,6 @@ export function JokeDisplay({ joke, isLoading }: JokeDisplayProps) {
       transition={{ duration: 0.5 }}
     >
       <Card variant="glossyPrimary" className="w-full">
-        <CardHeader>
-          <CardTitle className="text-center">Joke of the Day</CardTitle>
-        </CardHeader>
         <CardContent>
           <motion.div
             className="text-xl text-center p-6 min-h-24 flex items-center justify-center"
