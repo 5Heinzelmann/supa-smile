@@ -32,16 +32,33 @@ export function AdminControls({ onJokeChange }: AdminControlsProps) {
         throw new Error(`Failed to get current active joke: ${fetchError.message}`);
       }
       
-      // Get the next joke (any joke that isn't the current active one)
-      const { data: nextJoke, error: nextJokeError } = await supabase
+      // Try to get the joke with the next higher ID
+      const { data: nextJokeHigher } = await supabase
         .from('jokes')
         .select('id')
-        .neq('id', currentActiveJoke.id)
-        .limit(1)
-        .single();
+        .gt('id', currentActiveJoke.id)
+        .order('id')
+        .limit(1);
       
-      if (nextJokeError) {
-        throw new Error(`Failed to get next joke: ${nextJokeError.message}`);
+      let nextJoke;
+      
+      // If there's a joke with a higher ID, use it
+      if (nextJokeHigher && nextJokeHigher.length > 0) {
+        nextJoke = nextJokeHigher[0];
+      } else {
+        // Otherwise, wrap around to the joke with the lowest ID
+        const { data: nextJokeLower, error: nextJokeLowerError } = await supabase
+          .from('jokes')
+          .select('id')
+          .neq('id', currentActiveJoke.id)
+          .order('id')
+          .limit(1);
+        
+        if (nextJokeLowerError || !nextJokeLower || nextJokeLower.length === 0) {
+          throw new Error(`Failed to get next joke: ${nextJokeLowerError?.message || 'No jokes available'}`);
+        }
+        
+        nextJoke = nextJokeLower[0];
       }
       
       // Update the active status
