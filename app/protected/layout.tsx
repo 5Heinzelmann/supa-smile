@@ -1,7 +1,3 @@
-import {EnvVarWarning} from "@/components/env-var-warning";
-import {AuthButton} from "@/components/auth-button";
-import {hasEnvVars} from "@/lib/utils";
-
 export default function ProtectedLayout({
   children,
 }: {

@@ -9,7 +9,8 @@ export function AdminPageClient() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
+  // We use setRefreshKey in handleJokeChange but don't need the state itself
+  const [, setRefreshKey] = useState(0);
   const router = useRouter();
 
   useEffect(() => {

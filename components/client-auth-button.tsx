@@ -4,10 +4,11 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { User } from "@supabase/supabase-js";
 import { LogoutButton } from "./logout-button";
 
 export function ClientAuthButton() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {

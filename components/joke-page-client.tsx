@@ -13,7 +13,7 @@ interface JokePageClientProps {
 
 export function JokePageClient({ initialJoke }: JokePageClientProps) {
   const [joke, setJoke] = useState<JokeWithReactions | null>(initialJoke || null);
-  const [loading, setLoading] = useState(!initialJoke);
+  const [loading] = useState(!initialJoke);
 
   useEffect(() => {
     // Set up Supabase realtime subscription for current joke
