@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ValidEmoji } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
@@ -13,11 +13,22 @@ export function EmojiReactions({ jokeId }: EmojiReactionsProps) {
   const [loading, setLoading] = useState<ValidEmoji | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastClicked, setLastClicked] = useState<ValidEmoji | null>(null);
+  const [hasVoted, setHasVoted] = useState<boolean>(false);
 
   const emojis: ValidEmoji[] = ["😂", "🙃", "😐", "😤", "😮"];
 
+  useEffect(() => {
+    const votedJokes = JSON.parse(localStorage.getItem('votedJokes') || '{}');
+    setHasVoted(!!votedJokes[jokeId]);
+  }, [jokeId]);
+
   const handleReaction = async (emoji: ValidEmoji) => {
     try {
+      if (hasVoted) {
+        setError("You've already voted for this joke");
+        return;
+      }
+
       setLoading(emoji);
       setError(null);
       
@@ -69,6 +80,14 @@ export function EmojiReactions({ jokeId }: EmojiReactionsProps) {
         }
       }
 
+      // Save to localStorage that user has voted for this joke
+      const votedJokes = JSON.parse(localStorage.getItem('votedJokes') || '{}');
+      votedJokes[jokeId] = emoji;
+      localStorage.setItem('votedJokes', JSON.stringify(votedJokes));
+      
+      // Update state to reflect that user has voted
+      setHasVoted(true);
+
       console.log(`Successfully processed reaction for joke ${jokeId} with emoji ${emoji}`);
       setLastClicked(emoji);
       
@@ -85,32 +104,40 @@ export function EmojiReactions({ jokeId }: EmojiReactionsProps) {
   };
 
   return (
-    <div className="flex flex-wrap justify-center gap-2 md:gap-4">
+    <div className="flex flex-col items-center gap-4">
       {error && (
         <div className="w-full text-center text-sm text-destructive mb-2">
           {error}
         </div>
       )}
       
-      {emojis.map((emoji) => (
-        <Button
-          key={emoji}
-          variant="outline"
-          size="lg"
-          className={`text-2xl md:text-3xl h-12 md:h-16 w-12 md:w-16 transition-all ${
-            lastClicked === emoji ? "scale-125 bg-accent" : ""
-          }`}
-          disabled={loading !== null}
-          onClick={() => handleReaction(emoji)}
-        >
-          {emoji}
-          {loading === emoji && (
-            <span className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
-              <div className="h-4 w-4 rounded-full border-2 border-t-transparent animate-spin"></div>
-            </span>
-          )}
-        </Button>
-      ))}
+      {hasVoted && (
+        <div className="w-full text-center text-sm text-primary mb-2">
+          You've already voted for this joke
+        </div>
+      )}
+      
+      <div className="flex flex-wrap justify-center gap-2 md:gap-4">
+        {emojis.map((emoji) => (
+          <Button
+            key={emoji}
+            variant="outline"
+            size="lg"
+            className={`text-2xl md:text-3xl h-12 md:h-16 w-12 md:w-16 transition-all ${
+              lastClicked === emoji ? "scale-125 bg-accent" : ""
+            } ${hasVoted ? "opacity-50" : ""}`}
+            disabled={loading !== null || hasVoted}
+            onClick={() => handleReaction(emoji)}
+          >
+            {emoji}
+            {loading === emoji && (
+              <span className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
+                <div className="h-4 w-4 rounded-full border-2 border-t-transparent animate-spin"></div>
+              </span>
+            )}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 }
