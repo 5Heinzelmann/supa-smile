@@ -6,11 +6,11 @@
  * Emoji constants for reactions
  */
 export const EMOJI_REACTIONS = {
-  LAUGHING: "😂",
-  SMIRKING: "🙃",
+  LAUGHING: "🤣",
+  SMIRKING: "😅",
   NEUTRAL: "😐",
-  ANNOYED: "😤",
-  SURPRISED: "😮",
+  ANNOYED: "😝",
+  SURPRISED: "🤔"
 } as const;
 
 /**
