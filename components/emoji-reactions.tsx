@@ -131,7 +131,7 @@ export function EmojiReactions({ jokeId }: EmojiReactionsProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          You&apos;ve already voted for this joke - wait for the next one...
+          Thanks for voting! Just wait for the next one...
         </motion.div>
       )}
       
