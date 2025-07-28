@@ -57,7 +57,13 @@ export function ReactionCounter({ jokeId, initialReactions = [] }: ReactionCount
     // Initialize with any provided initial reactions
     if (initialReactions.length > 0) {
       console.log('Initializing with provided reactions:', initialReactions);
-      const initialCounts = { ...reactions };
+      const initialCounts = {
+        [EMOJI_REACTIONS.LAUGHING]: 0,
+        [EMOJI_REACTIONS.SMIRKING]: 0,
+        [EMOJI_REACTIONS.NEUTRAL]: 0,
+        [EMOJI_REACTIONS.ANNOYED]: 0,
+        [EMOJI_REACTIONS.SURPRISED]: 0,
+      };
       initialReactions.forEach((reaction) => {
         initialCounts[reaction.emoji as ValidEmoji] = reaction.reaction_count;
       });

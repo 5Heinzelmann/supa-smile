@@ -2,14 +2,21 @@ import {JokePageClient} from "@/components/joke-page-client";
 import {createClient} from "@/lib/supabase/server";
 
 export default async function Home() {
-  const supabase = await createClient();
-  
-  // Fetch the current joke
-  const { data: joke } = await supabase
-    .from('jokes')
-    .select('*, reactions(*)')
-    .eq('is_current', true)
-    .single();
+
+    // const joke = {
+    // id: "1",
+    // text: "Hier könnte Ihre Witz stehen!",
+    // is_current: true,
+    // reactions: [],
+    // created_at: new Date().toISOString(),
+    // }
+
+    const supabase = await createClient();
+    const { data: joke } = await supabase
+      .from('jokes')
+      .select('*, reactions(*)')
+      .eq('is_current', true)
+      .single();
 
   return (
     <main className="flex flex-col items-center">
