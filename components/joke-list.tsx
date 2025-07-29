@@ -48,10 +48,10 @@ export function JokeList({ refreshTrigger }: JokeListProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Supa-Smile Collection 📚</CardTitle>
+          <CardTitle>All Jokes</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Loading all the giggles... 🔄</p>
+          <p className="text-muted-foreground">Loading all the giggles...</p>
         </CardContent>
       </Card>
     );
@@ -73,7 +73,7 @@ export function JokeList({ refreshTrigger }: JokeListProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>All Jokes ({jokes.length})</CardTitle>
+        <CardTitle>All Jokes</CardTitle>
       </CardHeader>
       <CardContent>
         {jokes.length === 0 ? (

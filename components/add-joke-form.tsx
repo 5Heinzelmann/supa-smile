@@ -18,7 +18,7 @@ export function AddJokeForm({ onJokeAdded }: AddJokeFormProps) {
     e.preventDefault();
 
 
-    console.log(text)
+    alert(text);
     // code goes here
 
 
@@ -39,7 +39,7 @@ export function AddJokeForm({ onJokeAdded }: AddJokeFormProps) {
               <Input
                 id="text"
                 type="text"
-                placeholder="What's gonna make everyone smile today? 😊"
+                placeholder="Knock, knock..."
                 required
                 value={text}
                 onChange={(e) => setText(e.target.value)}
