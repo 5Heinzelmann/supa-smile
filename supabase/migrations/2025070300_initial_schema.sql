@@ -24,6 +24,3 @@ CREATE INDEX idx_reactions_joke_id ON reactions(joke_id);
 -- Add comment to tables and functions for better documentation
 COMMENT ON TABLE jokes IS 'Table storing all jokes for the SupaSmile application';
 COMMENT ON TABLE reactions IS 'Table storing emoji reactions for jokes';
-COMMENT ON FUNCTION get_current_joke() IS 'Returns the currently active joke';
-COMMENT ON FUNCTION set_current_joke(UUID) IS 'Sets a specific joke as the current one and resets all others';
-COMMENT ON FUNCTION get_next_joke() IS 'Returns a random joke that has not been set as current yet';
